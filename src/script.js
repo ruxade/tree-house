@@ -90,57 +90,63 @@ const gui = new dat.GUI({
 
 
 
- // LOADING
+//  LOADING
 
-//  const loadingBarElement = document.querySelector('.loading-bar')
+ const loadingBarElement = document.querySelector('.loading-bar')
+ const loadingBarPercentageElement = document.getElementById('loading-percentage')
 
 
+ const loadingManager = new THREE.LoadingManager(
+   () =>{
+     gsap.delayedCall(0.5, () =>
+       {
+         gsap.to(overlayMaterial.uniforms.uAlpha, {duration: 3, value : 0})
+         loadingBarElement.classList.add('ended')
+         loadingBarElement.style.transform =''
+         loadingBarPercentageElement.classList.add('ended')
+     })
+   },
 
-//  const loadingManager = new THREE.LoadingManager(
-//    () =>{
-//      gsap.delayedCall(0.5, () =>
-//        {
-//          gsap.to(overlayMaterial.uniforms.uAlpha, {duration: 3, value : 0})
-//          loadingBarElement.classList.add('ended')
-//          loadingBarElement.style.transform =''
-//      })
-//    },
+   (itemUrl, itemsLoaded, itemsTotal) =>{
 
-//    (itemUrl, itemsLoaded, itemsTotal) =>{
+     const progressRatio =  itemsLoaded / itemsTotal
+     loadingBarElement.style.transform = `scaleX(${progressRatio})`
+    //  console.log(progressRatio)
 
-//      const progressRatio =  itemsLoaded / itemsTotal
-//      loadingBarElement.style.transform = `scaleX(${progressRatio})`
-//      console.log(progressRatio)
 
-//      }
-//    )
+    const percentage = Math.round(progressRatio * 100);
+    loadingBarPercentageElement.textContent = `${percentage}%`;
+
+
+     }
+   )
 
 
 // OVERLAY
 
-// const overlayGeometry = new THREE.PlaneGeometry(2, 2, 1, 1)
-// const overlayMaterial = new THREE.ShaderMaterial ({
-//   // wireframe: true,
-//   transparent: true,
-//   uniforms:
-//   {
-//     uAlpha: { value: 1 }
-//   },
-//   vertexShader: `
-//     void main ()
-//     {
-//     gl_Position =  vec4(position, 1.0);
-//     }`,
-//     fragmentShader:`
-//     uniform float uAlpha;
-//     void main ()
-//     {
+const overlayGeometry = new THREE.PlaneGeometry(2, 2, 1, 1)
+const overlayMaterial = new THREE.ShaderMaterial ({
+  // wireframe: true,
+  transparent: true,
+  uniforms:
+  {
+    uAlpha: { value: 1 }
+  },
+  vertexShader: `
+    void main ()
+    {
+    gl_Position =  vec4(position, 1.0);
+    }`,
+    fragmentShader:`
+    uniform float uAlpha;
+    void main ()
+    {
 
-//       gl_FragColor = vec4(1.0, 1.0, 1.0, uAlpha);
-//     }`
-// })
+      gl_FragColor = vec4(1.0, 1.0, 1.0, uAlpha);
+    }`
+})
 
-// const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
+const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
 // scene.add(overlay)
 
 
@@ -151,7 +157,7 @@ const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0); // Plane 
 
 
 // TEXTURES
-const textureLoader = new THREE.TextureLoader()
+const textureLoader = new THREE.TextureLoader(loadingManager)
 const matcapTexture = textureLoader.load('/textures/matcaps/29.png')
 const texture = textureLoader.load('/textures/matcaps/16.png')
 // const grassTexture = textureLoader.load('/textures/matcaps/16.png')
@@ -215,7 +221,7 @@ const material = new THREE.MeshStandardMaterial({
 
 // LOADER FBX
 
-const fbxLoader = new FBXLoader();
+const fbxLoader = new FBXLoader(loadingManager);
 
 
 const loadTrees = (modelName, modelPath, onComplete) => {
@@ -293,9 +299,9 @@ const originalEmissiveColor = new THREE.Color(0x111111);
 const emissiveColor10Percent = originalEmissiveColor.multiplyScalar(0.1);
 
 
+const gltfLoader = new GLTFLoader(loadingManager);
 const loadModel = (modelName, modelPath, onComplete) => {
   // Create a new GLTFLoader instance
-  const gltfLoader = new GLTFLoader();
 
   gltfLoader.load(
     modelPath, // Path to the model
@@ -360,18 +366,23 @@ loadModel(
           '/models/house/roof.gltf', // Path to the glTF model
           (model) => {
             roof = model; // Assign the loaded model to the roof variable
-            roof.position.set(0, +10, 0); // Start at the same initial position as the house
-            roof.layers.set(2); // Assign the roof model to layer 2
+            roof.position.set(0, 10, 0); // Start at the same initial position as the house
+
+            roof.traverse((child) => {
+              if (child.isMesh) {
+                child.castShadow = false; // Disable shadow casting
+                child.receiveShadow = false; // Disable shadow receiving
+              }
+            });
             scene.add(roof); // Add the roof model to the scene
 
             // Animate the roof model's position
             gsap.to(roof.position, {
               y: 0, // Target position (same as the house's target position)
-              duration: 3, // Animation duration
+              duration: 2, // Animation duration
               ease: 'ease1.in', // Easing function
-              onComplete: () => {
-                console.log('Roof animation complete!');
-              },
+
+
             });
           }
         );
@@ -379,7 +390,6 @@ loadModel(
     });
   }
 );
-
 
 
 
@@ -449,7 +459,7 @@ const sphereRadius = 50
 const sphereCenter = new THREE.Vector3(0, 0, 0)
 
 const backgroundMaterial = new THREE.MeshMatcapMaterial({
-  matcap: backgroundTexture,
+  map: backgroundTexture,
   flatShading: false,
 })
 
