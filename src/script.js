@@ -371,7 +371,7 @@ let roof = null;
 // Load the house model first
 loadModel(
   'house', // Model name
-  '/models/house/houseNoRoof.glb', // Path to the glTF model
+  '/models/house/compressed_houseNoRoof.glb', // Path to the glTF model
   (model) => {
     house = model; // Assign the loaded model to the house variable
     house.scale.set(1, 1, 1); // Scale the object
