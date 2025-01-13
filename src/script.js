@@ -237,7 +237,7 @@ const loadTrees = (modelName, modelPath, onComplete) => {
       })
 
       object.castShadow = true
-      object.scale.set(0.001, 0.001, 0.001);
+      object.scale.set(0.0001, 0.0001, 0.0001);
       object.position.set(1, -15, 1);
       object.rotation.x =  - Math.PI /2
       object.rotation.z = - Math.PI /2
@@ -246,17 +246,28 @@ const loadTrees = (modelName, modelPath, onComplete) => {
 
       gsap.to(object.position, {
         y: 0, // Bounce upwards first (height before going back down)
-        duration: 6, // Short duration for the "bounce"
+        duration: 5, // Short duration for the "bounce"
         ease: "elastic.out(1.5, 1.3)",
         // repeat: 1, // Repeat the bounce
         yoyo: true, // Reverses the bounce effect back to the starting position
+        delay: 2
       });
 
       gsap.to(object.rotation, {
         z: - Math.PI /16 , // Rotate 90 degrees on the Z-axis
-        duration: 2, // Slow final movement to settle
+        duration: 1.5, // Slow final movement to settle
         ease: "power1.out", // Bounce easing at the end for the rotation
-        //  repeat: 1
+        delay: 0
+      });
+
+      gsap.to(object.scale, {
+        duration: 2,  // 2 seconds duration
+        y: 0.001,
+        x: 0.001,
+        z: 0.001,         // Animate to y=3 position
+        yoyo: false,
+        // repeat: -1,
+        ease: "sine.inOut",
       });
 
 
@@ -370,8 +381,9 @@ loadModel(
     // Animate the house model's position
     gsap.to(house.position, {
       y: 0, // Target position
-      duration: 2.5, // Animation duration
-      ease: 'power1.out', // Easing function
+      duration: 3.5, // Animation duration
+      ease: 'bounce.out', // Easing function
+
       onComplete: () => {
 
         loadModel(
@@ -517,8 +529,8 @@ const ambientLight = new THREE.AmbientLight(0xfffaf4, 0.8) // Color, intensity
 // gui.add(ambientLight, 'intensity').min(0).max(1).step(0.1)
 scene.add(ambientLight)
 
-const directionalLight = new THREE.DirectionalLight(0xf8c471, 5)
-directionalLight.position.set(10, 17, -14)
+const directionalLight = new THREE.DirectionalLight(0xf8c471, 7)
+directionalLight.position.set(14, 17, -10)
 directionalLight.castShadow = true;
 
 // gui.add(directionalLight, 'intensity').min(0).max(1).step(0.1)
@@ -528,13 +540,13 @@ scene.add(directionalLight)
 // const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 15)
 // scene.add(directionalLightHelper)
 
-const pointLight = new THREE.PointLight(0xfff5e5, 3, 50); // Color, intensity, distance
+const pointLight = new THREE.PointLight(0xfcf3cf, 6, 50); // Color, intensity, distance
 pointLight.position.set(0.15, 4.8, -0.25)
 pointLight.castShadow = true;
 
 scene.add(pointLight)
-const pointLight2 = new THREE.PointLight(0xfff5e5, 3, 50); // Color, intensity, distance
-pointLight2.position.set(-4, 5.6, 0.2)
+const pointLight2 = new THREE.PointLight(0xfcf3cf, 5, 50); // Color, intensity, distance
+pointLight2.position.set(-4, 5.5, 0.2)
 pointLight2.castShadow = true;
 
 scene.add(pointLight2)
@@ -617,14 +629,14 @@ controls.maxDistance = 20;
 // camera.position.set(13,0,13)
 
 controls.target.set(-3, 5, 0)
- // FOG
 
+
+// FOG
 // const fog = new THREE.FogExp2( 0xffffff, 0.06); // Color and initial density (higher value means denser fog)
 // scene.fog = fog;
 
-
-let initialCameraRotation = camera.rotation.y
-let initialCameraPosition = 20; // Store the initial camera position
+// let initialCameraRotation = camera.rotation.y
+let initialCameraPosition = 18; // Store the initial camera position
 let initialRoofPosition = 0
 // roof.position.set(0, 8, 0)
 
@@ -632,20 +644,24 @@ let initialRoofPosition = 0
 function checkCameraPosition() {
 
   if (roof ) {
-    if (camera.position.y > initialCameraPosition) {
-      // If the camera is above the initial position (camera's y is higher)
-      gsap.to(roof.position, {
-        y: initialRoofPosition + 25, // Move roof up by 15 units
-        duration: 1, // Animation duration
-        ease: 'power2.out', // Easing function
-      });
-    } else if (camera.position.y < initialCameraPosition ) {
-      // If the camera is below the initial position (camera's y is lower)
-      gsap.to(roof.position, {
-        y: 0, // Move roof down by 15 units
-        duration: 1, // Animation duration
-        ease: 'power2.out', // Easing function
-      });
+    const tolerance = 0.1;
+    if (Math.abs(camera.position.y - initialCameraPosition) > tolerance) {
+      if (camera.position.y > initialCameraPosition ||  camera.position.x < 8 || camera.z < 8) {
+        gsap.to(roof.position, {
+          y: initialRoofPosition + 10,
+          x: -30,
+
+          duration: 2,
+          ease: 'expo.out',
+        });
+      } else {
+        gsap.to(roof.position, {
+          y: 0,
+          x:0,
+          duration: 2,
+          ease: 'expo.out',
+        });
+      }
     }
 
     // Update the previousCameraPosition to the current camera position
