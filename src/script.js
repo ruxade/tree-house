@@ -196,7 +196,7 @@ floor.position.set(0,-1,0)
 floor.scale.set(0,0,0)
 
 gsap.to(floor.scale, {
-  duration: 4,  // 2 seconds duration
+  duration: 2,  // 2 seconds duration
   y: 1,
   x: 6,
   z: 6,         // Animate to y=3 position
@@ -250,7 +250,7 @@ const loadTrees = (modelName, modelPath, onComplete) => {
         ease: "elastic.out(1.5, 1.3)",
         // repeat: 1, // Repeat the bounce
         yoyo: true, // Reverses the bounce effect back to the starting position
-        delay: 2
+        delay: 0.5
       });
 
       gsap.to(object.rotation, {
@@ -297,7 +297,7 @@ if (floor1){
 
       }
     );
-  }, 2000);
+  }, 500);
 }
 
 
