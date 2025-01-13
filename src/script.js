@@ -1,10 +1,10 @@
 import './style.css'
-console.log("hello three js")
+// console.log("hello three js")
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import gsap from'gsap'
 import * as dat from 'dat.gui'
-
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 
@@ -240,23 +240,24 @@ const loadTrees = (modelName, modelPath, onComplete) => {
       object.scale.set(0.001, 0.001, 0.001);
       object.position.set(1, -15, 1);
       object.rotation.x =  - Math.PI /2
-      object.rotation.z = - Math.PI *2
+      object.rotation.z = - Math.PI /2
       scene.add(object); // Add the model to the scene
 
 
       gsap.to(object.position, {
         y: 0, // Bounce upwards first (height before going back down)
-        duration: 2.3, // Short duration for the "bounce"
+        duration: 4.3, // Short duration for the "bounce"
         ease: "ease1.in", // Slight easing for the bounce up
         // repeat: 1, // Repeat the bounce
         yoyo: true, // Reverses the bounce effect back to the starting position
       });
 
-      // gsap.to(object.rotation, {
-      //   z: - Math.PI /8 , // Rotate 90 degrees on the Z-axis
-      //   duration: 2, // Slow final movement to settle
-      //   ease: "ease1.in", // Bounce easing at the end for the rotation
-      // });
+      gsap.to(object.rotation, {
+        z: - Math.PI /16 , // Rotate 90 degrees on the Z-axis
+        duration: 2, // Slow final movement to settle
+        ease: "ease1.in", // Bounce easing at the end for the rotation
+        //  repeat: 1
+      });
 
 
 
@@ -289,7 +290,10 @@ if (floor1){
 }
 
 
-
+const gltfLoader = new GLTFLoader(loadingManager);
+// Draco Loader for compressed files
+const dracoLoader = new DRACOLoader(loadingManager);
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
 
 //  GLTFLoader
 
@@ -299,13 +303,24 @@ const originalEmissiveColor = new THREE.Color(0x111111);
 const emissiveColor10Percent = originalEmissiveColor.multiplyScalar(0.1);
 
 
-const gltfLoader = new GLTFLoader(loadingManager);
-const loadModel = (modelName, modelPath, onComplete) => {
-  // Create a new GLTFLoader instance
+// Set the DRACOLoader for GLTFLoader
+gltfLoader.setDRACOLoader(dracoLoader);
 
+
+const loadModel = (modelName, modelPath, onComplete) => {
+  const startTime = performance.now();
+  // Create a new GLTFLoader instance
   gltfLoader.load(
     modelPath, // Path to the model
     (gltf) => {
+      const endTime = performance.now(); // End the timer
+
+
+    const loadTimeMs = endTime - startTime; // Time in milliseconds
+    const loadTimeSeconds = loadTimeMs / 1000; // Convert to seconds
+
+    console.log(`Model loaded in ${loadTimeSeconds.toFixed(2)} seconds`); // Log in seconds
+
       const object = gltf.scene; // The scene from the glTF file
 
       object.traverse((child) => {
@@ -328,7 +343,7 @@ const loadModel = (modelName, modelPath, onComplete) => {
       }
     },
     (xhr) => {
-      console.log(`${modelName}: ${(xhr.loaded / xhr.total) * 100}% loaded`); // Loading progress
+      // console.log(`${modelName}: % loading`); // Loading progress
     },
     (error) => {
       console.error(`An error occurred loading ${modelName}`, error); // Error handling
@@ -345,7 +360,7 @@ let roof = null;
 // Load the house model first
 loadModel(
   'house', // Model name
-  '/models/house/treeHouseNoRoof.gltf', // Path to the glTF model
+  '/models/house/houseNoRoof.glb', // Path to the glTF model
   (model) => {
     house = model; // Assign the loaded model to the house variable
     house.scale.set(1, 1, 1); // Scale the object
@@ -356,11 +371,9 @@ loadModel(
     gsap.to(house.position, {
       y: 0, // Target position
       duration: 2, // Animation duration
-      ease: 'power2.out', // Easing function
+      ease: 'power1.out', // Easing function
       onComplete: () => {
 
-
-        // Load the roof model after the house is loaded and animation is complete
         loadModel(
           'roof', // Model name
           '/models/house/roof.gltf', // Path to the glTF model
@@ -374,22 +387,28 @@ loadModel(
                 child.receiveShadow = false; // Disable shadow receiving
               }
             });
-            scene.add(roof); // Add the roof model to the scene
 
+            scene.add(roof); // Add the roof model to the scene
             // Animate the roof model's position
             gsap.to(roof.position, {
               y: 0, // Target position (same as the house's target position)
-              duration: 2, // Animation duration
-              ease: 'ease1.in', // Easing function
-
+              duration: 1, // Animation duration
+              ease: 'power1.in', // Easing function
+              delay: 0
 
             });
           }
         );
+        console.log(roof)
+
+
+        // Load the roof model after the house is loaded and animation is complete
       },
     });
   }
 );
+
+
 
 
 
@@ -605,29 +624,38 @@ controls.target.set(-3, 5, 0)
 
 
 
-let previousCameraRotation = new THREE.Euler(); // Store the initial camera rotation
-previousCameraRotation.copy(camera.rotation); // Copy the initial rotation values
+let previousCameraPosition = camera.position.y; // Store the initial camera position
+let initialRoofPosition = 0
 
 // Function to check for camera rotation changes
-function checkCameraRotation() {
-  if (roof && !camera.rotation.equals(previousCameraRotation)) {
-    // If the camera's rotation has changed, animate the roof position
-    gsap.to(roof.position, {
-      y: roof.position.y + 15, // Move roof up by 15 units
-      duration: 1, // Animation duration
-      ease: 'power2.out', // Easing function
-    });
+function checkCameraPosition() {
+  if (roof) {
+    if (camera.position.y > previousCameraPosition) {
+      // If the camera is above the initial position (camera's y is higher)
+      gsap.to(roof.position, {
+        y: initialRoofPosition + 25, // Move roof up by 15 units
+        duration: 1, // Animation duration
+        ease: 'power2.out', // Easing function
+      });
+    } else if (camera.position.y < previousCameraPosition) {
+      // If the camera is below the initial position (camera's y is lower)
+      gsap.to(roof.position, {
+        y: 0, // Move roof down by 15 units
+        duration: 1, // Animation duration
+        ease: 'power2.out', // Easing function
+      });
+    }
 
-    // Update the previousCameraRotation to the current rotation
-    previousCameraRotation.copy(camera.rotation);
+    // Update the previousCameraPosition to the current camera position
+    previousCameraPosition = camera.position.y;
   }
 
-  // Use requestAnimationFrame to continuously monitor the camera rotation
-  requestAnimationFrame(checkCameraRotation);
+  // Use requestAnimationFrame to continuously monitor the camera position
+  requestAnimationFrame(checkCameraPosition);
 }
 
-// Call the function to start monitoring camera rotation
-checkCameraRotation();
+// Call the function to start monitoring camera position
+checkCameraPosition();
 
 
 
