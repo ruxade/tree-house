@@ -250,7 +250,7 @@ const loadTrees = (modelName, modelPath, onComplete) => {
         ease: "elastic.out(1.5, 1.3)",
         // repeat: 1, // Repeat the bounce
         yoyo: true, // Reverses the bounce effect back to the starting position
-        delay: 0.5
+        delay: 1
       });
 
       gsap.to(object.rotation, {
@@ -261,7 +261,7 @@ const loadTrees = (modelName, modelPath, onComplete) => {
       });
 
       gsap.to(object.scale, {
-        duration: 2,  // 2 seconds duration
+        duration: 3,  // 2 seconds duration
         y: 0.001,
         x: 0.001,
         z: 0.001,         // Animate to y=3 position
@@ -381,7 +381,7 @@ loadModel(
     // Animate the house model's position
     gsap.to(house.position, {
       y: 0, // Target position
-      duration: 3.5, // Animation duration
+      duration: 2, // Animation duration
       ease: 'bounce.out', // Easing function
 
       onComplete: () => {
