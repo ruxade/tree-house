@@ -335,16 +335,37 @@ const loadModel = (modelName, modelPath, onComplete) => {
       const object = gltf.scene; // The scene from the glTF file
 
       object.traverse((child) => {
+
         if (child.isMesh) {
+          const material = child.material;
+
           child.castShadow = true;
-          child.receiveShadow = true;
-          child.material.roughness = 1.9;
-          child.material.metalness = 0;
-          child.material.emissive = emissiveColor10Percent;
-          // child.material.sheen = new THREE.Color(0x444444)
-          // child.material = material2; // Apply material
+          child.receiveShadow=true
+
+          if (material.isMeshStandardMaterial) {
+            material.castShadow = true;
+            material.receiveShadow = true;
+            material.roughness = 1.9;
+            material.metalness = 0;
+            // material.emissive = emissiveColor10Percent;
+            // Optionally add sheen or apply another material
+            // material.sheen = new THREE.Color(0x444444);
+            // material = material2;  // Apply a different material if needed
+          }
+          if (material.map) {  // Check if the material has a texture (diffuse map)
+            const texture = material.map;
+
+            // Example: Change texture properties (e.g., repeating the texture)
+
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+          }
         }
-      });
+});
+
+
 
 
 
@@ -371,7 +392,7 @@ let roof = null;
 // Load the house model first
 loadModel(
   'house', // Model name
-  '/models/house/compressed_houseNoRoof.glb', // Path to the glTF model
+  '/models/house/dec_houseNoRoof.glb', // Path to the glTF model
   (model) => {
     house = model; // Assign the loaded model to the house variable
     house.scale.set(1, 1, 1); // Scale the object
@@ -529,7 +550,7 @@ const ambientLight = new THREE.AmbientLight(0xfffaf4, 0.8) // Color, intensity
 // gui.add(ambientLight, 'intensity').min(0).max(1).step(0.1)
 scene.add(ambientLight)
 
-const directionalLight = new THREE.DirectionalLight(0xf8c471, 7)
+const directionalLight = new THREE.DirectionalLight(0xfdecd1, 5)
 directionalLight.position.set(14, 17, -10)
 directionalLight.castShadow = true;
 
@@ -645,21 +666,24 @@ function checkCameraPosition() {
 
   if (roof ) {
     const tolerance = 0.1;
+    // roof.position.y = initialRoofPosition + 5
     if (Math.abs(camera.position.y - initialCameraPosition) > tolerance) {
       if (camera.position.y > initialCameraPosition ||  camera.position.x < 8 || camera.z < 8) {
         gsap.to(roof.position, {
           y: initialRoofPosition + 10,
           x: -30,
+          z: 30,
 
-          duration: 2,
-          ease: 'expo.out',
+          duration: 3,
+          ease: 'elastic.out',
         });
       } else {
         gsap.to(roof.position, {
           y: 0,
           x:0,
-          duration: 2,
-          ease: 'expo.out',
+          z:0,
+          duration: 3,
+          ease: 'elastic.out',
         });
       }
     }
