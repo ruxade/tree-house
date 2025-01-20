@@ -459,7 +459,7 @@ scene.background = new THREE.Color(0x26291e)
 
 
 // LIGHTS
-const ambientLight = new THREE.AmbientLight(0xfffaf4, 1.8) // Color, intensity
+const ambientLight = new THREE.AmbientLight(0xFFF9D9, 1.8) // Color, intensity
 ambientLight.castShadow = true
 scene.add(ambientLight)
 
@@ -621,6 +621,13 @@ const tick = () => {
     // render
     renderer.render(scene, camera)
     controls.update()
+    // light
+    directionalLight.position.x = 24 + Math.sin(Date.now() * 0.0005) * 5 // Oscillate along X-axis
+    directionalLight.position.z = -20 + Math.cos(Date.now() * 0.0005)  * 10// Oscillate along Z-axis
+    // directionalLight.position.y = 27 + Math.cos(Date.now() * 0.001)  * 10
+      // Change intensity over time
+    // directionalLight.intensity = 3 + Math.sin(Date.now() * 0.002) * 0.5;
+
 
     // animateParticles()
     window.requestAnimationFrame(tick)
