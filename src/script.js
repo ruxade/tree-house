@@ -1,18 +1,14 @@
 import './style.css'
-// console.log("hello three js")
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import gsap from'gsap'
 import * as dat from 'dat.gui'
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 
 
-
-
 // CURSOR
-
 const cursor = {
   x: 0,
   y:0
@@ -23,46 +19,34 @@ window.addEventListener ('mousemove', (event) => {
     cursor.y = - (event.clientY / sizes.height - 0.5)
 })
 
-
-// scene
+// SCENE
 const scene = new THREE.Scene()
 
-
-// SIZES
+// WINDOW SIZES
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight
 }
 
 
-
-
-// Camera
+// CAMERAS
 const camera = new THREE.PerspectiveCamera(55, sizes.width / sizes.height, 1, 1000)
 
 // ortho CAMERA
 // const aspectRatio = sizes.width / sizes.height
 // const camera = new THREE.OrthographicCamera(-1 * aspectRatio, 1 * aspectRatio, 1, -1, 0.1, 100)
 
+camera.position.z = 7
+camera.position.y = 20
+camera.position.x = 5
 
-camera.position.z = 13
-camera.position.y = 22.5
-camera.position.x = 13
-
-
-
-// camera.layers.enableAll();
 
 scene.add(camera)
 
 
 
 
-
-
-
-
-
+// RESIZE
 window.addEventListener('resize', () =>
   {
     // Update sizes
@@ -78,19 +62,16 @@ window.addEventListener('resize', () =>
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   })
 
-// DEBUG
-// const gui = new dat.GUI({
-  // closed: true,
-  // width: 180
-  // color: 'white'
-// })
-//  gui.hide()
+
+  // renderer
+const canvas = document.querySelector('.webgl')
+const renderer = new THREE.WebGLRenderer ({
+  canvas: canvas,
+  antialias: true
+})
 
 
-
-
-
-//  LOADING
+//  LOADING BAR
 
  const loadingBarElement = document.querySelector('.loading-bar')
  const loadingBarPercentageElement = document.getElementById('loading-percentage')
@@ -114,13 +95,12 @@ window.addEventListener('resize', () =>
     //  console.log(progressRatio)
 
 
-    const percentage = Math.round(progressRatio * 100);
-    loadingBarPercentageElement.textContent = `${percentage}%`;
+    const percentage = Math.round(progressRatio * 100)
+    loadingBarPercentageElement.textContent = `${percentage}%`
 
 
      }
    )
-
 
 // OVERLAY
 
@@ -135,14 +115,14 @@ const overlayMaterial = new THREE.ShaderMaterial ({
   vertexShader: `
     void main ()
     {
-    gl_Position =  vec4(position, 1.0);
+    gl_Position =  vec4(position, 1.0)
     }`,
     fragmentShader:`
-    uniform float uAlpha;
+    uniform float uAlpha
     void main ()
     {
 
-      gl_FragColor = vec4(1.0, 1.0, 1.0, uAlpha);
+      gl_FragColor = vec4(1.0, 1.0, 1.0, uAlpha)
     }`
 })
 
@@ -151,12 +131,7 @@ const overlay = new THREE.Mesh(overlayGeometry, overlayMaterial)
 
 
 
-
-
-const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0); // Plane pointing upwards
-
-
-// TEXTURES
+// TEXTURES & MATERIALS
 const textureLoader = new THREE.TextureLoader(loadingManager)
 const matcapTexture = textureLoader.load('/textures/matcaps/29.png')
 const texture = textureLoader.load('/textures/matcaps/16.png')
@@ -166,12 +141,6 @@ const texture = textureLoader.load('/textures/matcaps/16.png')
 const material2 = new THREE.MeshStandardMaterial({
   map: matcapTexture,
   flatShading: false,
-
-
-  // roughness: 0.8,
-  // metalness: 0.51,
-  // wireframe: true
-
  })
 
 // / FLOOR
@@ -205,7 +174,7 @@ gsap.to(floor.scale, {
   ease: "sine.inOut",
 });
 
-floor.receiveShadow = true;
+floor.receiveShadow = true
 scene.add(floor)
 
 const material = new THREE.MeshStandardMaterial({
@@ -221,7 +190,7 @@ const material = new THREE.MeshStandardMaterial({
 
 // LOADER FBX
 
-const fbxLoader = new FBXLoader(loadingManager);
+const fbxLoader = new FBXLoader(loadingManager)
 
 
 const loadTrees = (modelName, modelPath, onComplete) => {
@@ -230,18 +199,18 @@ const loadTrees = (modelName, modelPath, onComplete) => {
     (object) => {
       object.traverse((child) => {
         if (child.isMesh) {
-          child.material = plateMaterial;
-          child.castShadow = true;
-          child.receiveShadow = true;
+          child.material = plateMaterial
+          child.castShadow = true
+          child.receiveShadow = true
         }
       })
 
       object.castShadow = true
-      object.scale.set(0.0001, 0.0001, 0.0001);
-      object.position.set(1, -15, 1);
+      object.scale.set(0.0001, 0.0001, 0.0001)
+      object.position.set(1, -15, 1)
       object.rotation.x =  - Math.PI /2
       object.rotation.z = - Math.PI /2
-      scene.add(object); // Add the model to the scene
+      scene.add(object) // Add the model to the scene
 
 
       gsap.to(object.position, {
@@ -251,14 +220,14 @@ const loadTrees = (modelName, modelPath, onComplete) => {
         // repeat: 1, // Repeat the bounce
         yoyo: true, // Reverses the bounce effect back to the starting position
         delay: 1
-      });
+      })
 
       gsap.to(object.rotation, {
         z: - Math.PI /16 , // Rotate 90 degrees on the Z-axis
         duration: 1.5, // Slow final movement to settle
         ease: "power1.out", // Bounce easing at the end for the rotation
         delay: 0
-      });
+      })
 
       gsap.to(object.scale, {
         duration: 3,  // 2 seconds duration
@@ -268,12 +237,12 @@ const loadTrees = (modelName, modelPath, onComplete) => {
         yoyo: false,
         // repeat: -1,
         ease: "sine.inOut",
-      });
+      })
 
 
 
       if (onComplete) {
-        onComplete(object); // Call the onComplete callback if provided
+        onComplete(object) // Call the onComplete callback if provided
       }
     },
     (xhr) => {
@@ -282,10 +251,10 @@ const loadTrees = (modelName, modelPath, onComplete) => {
     (error) => {
 
     }
-  );
-};
+  )
+}
 
-let floor1 = true;
+let floor1 = true
 
 if (floor1){
 
@@ -296,92 +265,96 @@ if (floor1){
       (model) => {
 
       }
-    );
-  }, 500);
+    )
+  }, 500)
 }
 
 
-const gltfLoader = new GLTFLoader(loadingManager);
+const gltfLoader = new GLTFLoader(loadingManager)
 // Draco Loader for compressed files
-const dracoLoader = new DRACOLoader(loadingManager);
-dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+const dracoLoader = new DRACOLoader(loadingManager)
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/')
 
 //  GLTFLoader
 
-const originalEmissiveColor = new THREE.Color(0x111111);
+const originalEmissiveColor = new THREE.Color(0x111111)
 
-// Make it 10% of its original value by multiplying by 0.1
-const emissiveColor10Percent = originalEmissiveColor.multiplyScalar(0.1);
+const emissiveColor10Percent = originalEmissiveColor.multiplyScalar(0.1)
 
 
 // Set the DRACOLoader for GLTFLoader
-gltfLoader.setDRACOLoader(dracoLoader);
+gltfLoader.setDRACOLoader(dracoLoader)
 
 
 const loadModel = (modelName, modelPath, onComplete) => {
-  const startTime = performance.now();
+  const startTime = performance.now()
   // Create a new GLTFLoader instance
   gltfLoader.load(
     modelPath, // Path to the model
     (gltf) => {
-      const endTime = performance.now(); // End the timer
+      const endTime = performance.now() // End the timer
+    const loadTimeMs = endTime - startTime // Time in milliseconds
+    const loadTimeSeconds = loadTimeMs / 1000 // Convert to seconds
 
+    console.log(`Model loaded in ${loadTimeSeconds.toFixed(2)} seconds`)
 
-    const loadTimeMs = endTime - startTime; // Time in milliseconds
-    const loadTimeSeconds = loadTimeMs / 1000; // Convert to seconds
-
-    console.log(`Model loaded in ${loadTimeSeconds.toFixed(2)} seconds`); // Log in seconds
-
-      const object = gltf.scene; // The scene from the glTF file
+      const object = gltf.scene // The scene from the glTF file
 
       object.traverse((child) => {
 
         if (child.isMesh) {
           const material = child.material;
 
-          child.castShadow = true;
+          child.castShadow = true
           child.receiveShadow=true
 
           if (material.isMeshStandardMaterial) {
-            material.castShadow = true;
-            material.receiveShadow = true;
-            material.roughness = 1.9;
-            material.metalness = 0;
+            if (!material.map) {
+
+              child.geometry.computeVertexNormals()  //smooth shading for geometry without diffuse texture
+
+              // Smooth out the material if no texture map is found
+              material.roughness = 0.5
+              material.metalness = 0.1
+              // material.castShadow = true;
+              // material.receiveShadow = true;
+            } else {
+              // If a diffuse map exists, leave it as is or apply any additional settings
+              material.roughness = 0.8; // Slightly rougher if there's a texture map
+              material.metalness = 0.1; // Less metallic for textured materials
+            }
+
+            // material.castShadow = true;
+            // material.receiveShadow = true;
             // material.emissive = emissiveColor10Percent;
-            // Optionally add sheen or apply another material
-            // material.sheen = new THREE.Color(0x444444);
-            // material = material2;  // Apply a different material if needed
           }
-          if (material.map) {  // Check if the material has a texture (diffuse map)
-            const texture = material.map;
 
-            // Example: Change texture properties (e.g., repeating the texture)
 
-            texture.wrapS = THREE.RepeatWrapping;
-            texture.wrapT = THREE.RepeatWrapping;
-            texture.minFilter = THREE.LinearFilter;
-            texture.magFilter = THREE.LinearFilter;
+          if (material.map) {
+            const texture = material.map
+
+            texture.wrapS = THREE.RepeatWrapping
+            texture.wrapT = THREE.RepeatWrapping
+            // texture.minFilter = THREE.LinearFilter
+            texture.magFilter = THREE.LinearFilter
           }
         }
-});
-
-
-
+})
 
 
       // Call onComplete callback if provided
       if (onComplete) {
-        onComplete(object);
+        onComplete(object)
       }
     },
     (xhr) => {
       // console.log(`${modelName}: % loading`); // Loading progress
     },
     (error) => {
-      console.error(`An error occurred loading ${modelName}`, error); // Error handling
+      console.error(`An error occurred loading ${modelName}`, error) // Error handling
     }
-  );
-};
+  )
+}
 
 
 
@@ -412,14 +385,14 @@ loadModel(
           '/models/house/roof.gltf', // Path to the glTF model
           (model) => {
             roof = model; // Assign the loaded model to the roof variable
-            roof.position.set(0, 8, 0); // Start at the same initial position as the house
+            roof.position.set(0, 15, 0) // Start at the same initial position as the house
 
             roof.traverse((child) => {
               if (child.isMesh) {
-                child.castShadow = false; // Disable shadow casting
-                child.receiveShadow = false; // Disable shadow receiving
+                child.castShadow = false // Disable shadow casting
+                child.receiveShadow = true
               }
-            });
+            })
 
             scene.add(roof); // Add the roof model to the scene
             // Animate the roof model's position
@@ -452,57 +425,6 @@ loadModel(
 // ----------------------------------------------------------------------------------
 
 
-// house.overrideMaterial = new THREE.MeshBasicMaterial({
-//   map: texture,
-//   flatShading: false,
-//   // clippingPlanes: [clippingPlane],
-//   // wireframe: true
-// })
-
-
-
-clippingPlane.constant = 2
-clippingPlane.normal.set(0, -0.01, 0)
-
-
-
-
-
-      // const particleCount = 1000;
-      // const particleGeometry = new THREE.BufferGeometry();
-      // const particleMaterial = new THREE.PointsMaterial({
-      //   color: 0xffffff,
-      //   size: 0.05, // Adjust particle size
-      //   transparent: true,
-      //   opacity: 0.7,
-      //   blending: THREE.AdditiveBlending,
-      //   depthWrite: false
-      // });
-
-      // // Arrays for positions
-      // const positions = [];
-
-      // // Initialize particles with random positions
-      // for (let i = 0; i < particleCount; i++) {
-      //   // Randomize positions
-      //   positions.push((Math.random() - 0.5) * 10); // X
-      //   positions.push((Math.random() - 0.5) * 10); // Y
-      //   positions.push((Math.random() - 0.5) * 10); // Z
-      // }
-
-      // // Add attributes to geometry
-      // particleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-
-      // // Create the particle system
-      // const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
-      // scene.add(particleSystem);
-
-
-
-
-
-
-
 
 // SPHERE
 const backgroundTexture = textureLoader.load('/textures/matcaps/32.png')
@@ -524,35 +446,26 @@ backgroundMesh.position.set(0, 0, 0)
 
 
 
-// renderer
-const canvas = document.querySelector('.webgl')
-const renderer = new THREE.WebGLRenderer ({
-  canvas: canvas,
-  antialias: true
-})
-
-
-
-renderer.shadowMap.enabled = true; // Enable shadow maps
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional: softer shadows
 
 
 
 
+renderer.shadowMap.enabled = true // Enable shadow maps
+renderer.shadowMap.type = THREE.PCFSoftShadowMap // softer shadows
 
 
 
-scene.background = new THREE.Color(0x26291e);
+scene.background = new THREE.Color(0x26291e)
 
 
 // LIGHTS
-const ambientLight = new THREE.AmbientLight(0xfffaf4, 0.8) // Color, intensity
-// gui.add(ambientLight, 'intensity').min(0).max(1).step(0.1)
+const ambientLight = new THREE.AmbientLight(0xfffaf4, 1.8) // Color, intensity
+ambientLight.castShadow = true
 scene.add(ambientLight)
 
-const directionalLight = new THREE.DirectionalLight(0xfdecd1, 5)
-directionalLight.position.set(14, 17, -10)
-directionalLight.castShadow = true;
+const directionalLight = new THREE.DirectionalLight(0xfdecd1, 3)
+directionalLight.position.set(24, 27, -20)
+directionalLight.castShadow = true
 
 // gui.add(directionalLight, 'intensity').min(0).max(1).step(0.1)
 
@@ -561,13 +474,13 @@ scene.add(directionalLight)
 // const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 15)
 // scene.add(directionalLightHelper)
 
-const pointLight = new THREE.PointLight(0xfcf3cf, 6, 50); // Color, intensity, distance
-pointLight.position.set(0.15, 4.8, -0.25)
+const pointLight = new THREE.PointLight(0xfcf3cf, 7, 50); // Color, intensity, distance
+pointLight.position.set(0.15, 4.7, -0.25)
 pointLight.castShadow = true;
 
 scene.add(pointLight)
 const pointLight2 = new THREE.PointLight(0xfcf3cf, 5, 50); // Color, intensity, distance
-pointLight2.position.set(-4, 5.5, 0.2)
+pointLight2.position.set(-4, 5.4, 0.2)
 pointLight2.castShadow = true;
 
 scene.add(pointLight2)
@@ -575,14 +488,14 @@ scene.add(pointLight2)
 // const pointLightHelper = new THREE.PointLightHelper(pointLight2, 0.1) // POINT LIGHT HELPER
 // scene.add(pointLightHelper)
 
-directionalLight.shadow.mapSize.width = 2048; // Shadow resolution
-directionalLight.shadow.mapSize.height = 2048;
-directionalLight.shadow.camera.near = 1;
-directionalLight.shadow.camera.far = 500;
-directionalLight.shadow.camera.left = -50;
-directionalLight.shadow.camera.right = 50;
-directionalLight.shadow.camera.top = 50;
-directionalLight.shadow.camera.bottom = -50;
+directionalLight.shadow.mapSize.width = 2048 // Shadow resolution
+directionalLight.shadow.mapSize.height = 2048
+directionalLight.shadow.camera.near = 1
+directionalLight.shadow.camera.far = 60
+directionalLight.shadow.camera.left = -50
+directionalLight.shadow.camera.right = 50
+directionalLight.shadow.camera.top = 10
+directionalLight.shadow.camera.bottom = -20
 
 
 
@@ -592,10 +505,6 @@ directionalLight.shadow.camera.bottom = -50;
 // scene.add(axesHelper)
 
 
-
-
-
-// renderer.localClippingEnabled = true;
 
 // const material = new THREE.MeshStandardMaterial({
 //   color: 0xff0000,
@@ -619,7 +528,7 @@ directionalLight.shadow.camera.bottom = -50;
 renderer.setSize(sizes.width, sizes.height)
 document.body.appendChild(renderer.domElement)
 
-
+// FULLSCREEN
 window.addEventListener('dblclick', () => {
     if(!document.fullscreenElement) {
         canvas.requestFullscreen()
@@ -630,7 +539,7 @@ window.addEventListener('dblclick', () => {
 })
 
 
-// Controls
+// CONTROLS
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 controls.dampingFactor = 0.5;
@@ -640,7 +549,7 @@ controls.enableRotate = true;
 controls.maxPolarAngle = (Math.PI / 2) - 0.1 ; // 90 degrees (restrict vertical movement)
 // controls.minPolarAngle = (Math.PI / 8) - 3; // Optional: Set minimum angle for vertical movement
 
-controls.minDistance = 8;  // Minimum distance (camera can't zoom in closer than this)
+controls.minDistance = 8;  // Minimum distance
 controls.maxDistance = 20;
 
 
@@ -652,20 +561,18 @@ controls.maxDistance = 20;
 controls.target.set(-3, 5, 0)
 
 
-// FOG
-// const fog = new THREE.FogExp2( 0xffffff, 0.06); // Color and initial density (higher value means denser fog)
-// scene.fog = fog;
 
 // let initialCameraRotation = camera.rotation.y
-let initialCameraPosition = 18; // Store the initial camera position
+let initialCameraPosition = 18 // Store the initial camera position
 let initialRoofPosition = 0
 // roof.position.set(0, 8, 0)
 
-// Function to check for camera rotation changes
+
+
 function checkCameraPosition() {
 
   if (roof ) {
-    const tolerance = 0.1;
+    const tolerance = 0.1
     // roof.position.y = initialRoofPosition + 5
     if (Math.abs(camera.position.y - initialCameraPosition) > tolerance) {
       if (camera.position.y > initialCameraPosition ||  camera.position.x < 8 || camera.z < 8) {
@@ -676,7 +583,7 @@ function checkCameraPosition() {
 
           duration: 3,
           ease: 'elastic.out',
-        });
+        })
       } else {
         gsap.to(roof.position, {
           y: 0,
@@ -684,38 +591,32 @@ function checkCameraPosition() {
           z:0,
           duration: 3,
           ease: 'elastic.out',
-        });
+        })
       }
     }
 
     // Update the previousCameraPosition to the current camera position
-    // previousCameraPosition = camera.position.y;
+    // previousCameraPosition = camera.position.y
   }
 
   // Use requestAnimationFrame to continuously monitor the camera position
-  requestAnimationFrame(checkCameraPosition);
+  requestAnimationFrame(checkCameraPosition)
 }
 
-// Call the function to start monitoring camera position
-checkCameraPosition();
+checkCameraPosition()
 
 
-
-scene.fog = new THREE.Fog( 0x25281d, 1, 55 );
+// FOG
+// const fog = new THREE.FogExp2( 0x25281d, 0.01) // Color and initial density
+// scene.fog = fog
+//  0x25281d
+scene.fog = new THREE.Fog( 0x25281d, 6.5, 30 )
 
 
 
 
 // ANIMATIONS
 const tick = () => {
-
-    // CLOCK
-
-
-
-    // Update Controls
-    // constrainCamera()
-
 
     // render
     renderer.render(scene, camera)
