@@ -465,7 +465,14 @@ scene.add(ambientLight)
 
 const directionalLight = new THREE.DirectionalLight(0xfdecd1, 3)
 directionalLight.position.set(24, 27, -20)
+directionalLight.target.position.set(0, 0, 0)
+scene.add(directionalLight.target)
 directionalLight.castShadow = true
+
+directionalLight.shadow.bias = -0.0005;
+
+// Shadow softness (optional)
+directionalLight.shadow.radius = 4;
 
 // gui.add(directionalLight, 'intensity').min(0).max(1).step(0.1)
 
@@ -494,8 +501,8 @@ directionalLight.shadow.camera.near = 1
 directionalLight.shadow.camera.far = 60
 directionalLight.shadow.camera.left = -50
 directionalLight.shadow.camera.right = 50
-directionalLight.shadow.camera.top = 10
-directionalLight.shadow.camera.bottom = -20
+directionalLight.shadow.camera.top = 30
+directionalLight.shadow.camera.bottom = -10
 
 
 
